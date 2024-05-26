@@ -1,2 +1,2 @@
 # Realtime-3D-Pose-Detection
-This repositor
+This repository uses openCV for 3d pose detection 
