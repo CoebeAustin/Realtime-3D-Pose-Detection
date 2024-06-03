@@ -121,6 +121,66 @@ def calculate_angle(a, b, c):
 
     return angle
 
+# Function to track curls
+def track_curls(landmarks):
+    global left_counter, right_counter, left_stage, right_stage
+
+    left_shoulder = [landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value][0], landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value][1]]
+    left_elbow = [landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value][0], landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value][1]]
+    left_wrist = [landmarks[mp_pose.PoseLandmark.LEFT_WRIST.value][0], landmarks[mp_pose.PoseLandmark.LEFT_WRIST.value][1]]
+    right_shoulder = [landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value][0], landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value][1]]
+    right_elbow = [landmarks[mp_pose.PoseLandmark.RIGHT_ELBOW.value][0], landmarks[mp_pose.PoseLandmark.RIGHT_ELBOW.value][1]]
+    right_wrist = [landmarks[mp_pose.PoseLandmark.RIGHT_WRIST.value][0], landmarks[mp_pose.PoseLandmark.RIGHT_WRIST.value][1]]
+
+    left_angle = calculate_angle(left_shoulder, left_elbow, left_wrist)
+    right_angle = calculate_angle(right_shoulder, right_elbow, right_wrist)
+    cv2.putText(output_frame, str(left_angle), tuple(left_elbow), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2, cv2.LINE_AA)
+    cv2.putText(output_frame, str(right_angle), tuple(right_elbow), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2, cv2.LINE_AA)
+
+    if left_angle > 160:
+        left_stage = "down"
+    if left_angle < 30 and left_stage == "down":
+        left_stage = "up"
+        left_counter += 1
+        print(f"Left counter: {left_counter}")
+
+    if right_angle > 160:
+        right_stage = "down"
+    if right_angle < 30 and right_stage == "down":
+        right_stage = "up"
+        right_counter += 1
+        print(f"Right counter: {right_counter}")
+
+# Function to track squats
+def track_squats(landmarks):
+    global left_counter, right_counter, left_stage, right_stage
+
+    left_hip = [landmarks[mp_pose.PoseLandmark.LEFT_HIP.value][0], landmarks[mp_pose.PoseLandmark.LEFT_HIP.value][1]]
+    left_knee = [landmarks[mp_pose.PoseLandmark.LEFT_KNEE.value][0], landmarks[mp_pose.PoseLandmark.LEFT_KNEE.value][1]]
+    left_ankle = [landmarks[mp_pose.PoseLandmark.LEFT_ANKLE.value][0], landmarks[mp_pose.PoseLandmark.LEFT_ANKLE.value][1]]
+    right_hip = [landmarks[mp_pose.PoseLandmark.RIGHT_HIP.value][0], landmarks[mp_pose.PoseLandmark.RIGHT_HIP.value][1]]
+    right_knee = [landmarks[mp_pose.PoseLandmark.RIGHT_KNEE.value][0], landmarks[mp_pose.PoseLandmark.RIGHT_KNEE.value][1]]
+    right_ankle = [landmarks[mp_pose.PoseLandmark.RIGHT_ANKLE.value][0], landmarks[mp_pose.PoseLandmark.RIGHT_ANKLE.value][1]]
+
+    left_angle = calculate_angle(left_hip, left_knee, left_ankle)
+    right_angle = calculate_angle(right_hip, right_knee, right_ankle)
+    cv2.putText(output_frame, str(left_angle), tuple(left_knee), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2, cv2.LINE_AA)
+    cv2.putText(output_frame, str(right_angle), tuple(right_knee), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2, cv2.LINE_AA)
+
+    if left_angle > 160:
+        left_stage = "up"
+    if left_angle < 90 and left_stage == "up":
+        left_stage = "down"
+        left_counter += 1
+        print(f"Left counter: {left_counter}")
+
+    if right_angle > 160:
+        right_stage = "up"
+    if right_angle < 90 and right_stage == "up":
+        right_stage = "down"
+        right_counter += 1
+        print(f"Right counter: {right_counter}")
+
 # Initialize the webcam.
 cap = cv2.VideoCapture(0)
 left_counter = 0
@@ -137,6 +197,9 @@ if not cap.isOpened():
 cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
 cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
 
+# Get user input for exercise type
+exercise = input("Enter the exercise to track (squats/curls): ").strip().lower()
+
 while cap.isOpened():
     # Read a frame from the webcam.
     ret, frame = cap.read()
@@ -149,30 +212,13 @@ while cap.isOpened():
     output_frame, landmarks = detectPose(frame, pose)
 
     if landmarks:
-        left_shoulder = [landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value][0], landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value][1]]
-        left_elbow = [landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value][0], landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value][1]]
-        left_wrist = [landmarks[mp_pose.PoseLandmark.LEFT_WRIST.value][0], landmarks[mp_pose.PoseLandmark.LEFT_WRIST.value][1]]
-        right_shoulder = [landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value][0], landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value][1]]
-        right_elbow = [landmarks[mp_pose.PoseLandmark.RIGHT_ELBOW.value][0], landmarks[mp_pose.PoseLandmark.RIGHT_ELBOW.value][1]]
-        right_wrist = [landmarks[mp_pose.PoseLandmark.RIGHT_WRIST.value][0], landmarks[mp_pose.PoseLandmark.RIGHT_WRIST.value][1]]
-        left_angle = calculate_angle(left_shoulder, left_elbow, left_wrist)
-        right_angle = calculate_angle(right_shoulder, right_elbow, right_wrist)
-        cv2.putText(output_frame, str(left_angle), tuple(left_elbow), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2, cv2.LINE_AA)
-        cv2.putText(output_frame, str(right_angle), tuple(right_elbow), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2, cv2.LINE_AA)
-
-        if left_angle > 160:
-            left_stage = "down"
-        if left_angle < 30 and left_stage == "down":
-            left_stage = "up"
-            left_counter += 1
-            print(f"Left counter: {left_counter}")
-
-        if right_angle > 160:
-            right_stage = "down"
-        if right_angle < 30 and right_stage == "down":
-            right_stage = "up"
-            right_counter += 1
-            print(f"Right counter: {right_counter}")
+        if exercise == "c":
+            track_curls(landmarks)
+        elif exercise == "s":
+            track_squats(landmarks)
+        else:
+            print("Invalid exercise type. Please restart the program and enter 'squats' or 'curls'.")
+            break
 
     # Display the left counter on the top-left side
     cv2.putText(output_frame, f'Left Counter: {left_counter}', (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2, cv2.LINE_AA)
