@@ -3,6 +3,7 @@ import mediapipe as mp
 import matplotlib.pyplot as plt
 import os
 import tensorflow as tf
+import numpy as np
 
 tf.get_logger().setLevel('ERROR')
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
@@ -94,8 +95,23 @@ def detectPose(image, pose):
     # Return the output image and the found landmarks.
     return output_image, landmarks
 
+def calculate_angle(a,b,c):
+    a = np.array(a)
+    b = np.array(b)
+    c = np.array(c)
+
+    radians = np.arctan2(c[1]-b[1], c[0]-b[0]) - np.arctan2(a[1] - b[1], a[0] - b[0])
+    angle = np.abs(radians * 180.0 / np.pi)
+
+    if angle > 180.0:
+        angle = 360 - angle
+
+    return angle
+
 # Initialize the webcam.
 cap = cv2.VideoCapture(0)
+counter = 0
+stage  = None
 
 # Check if the webcam is opened correctly.
 if not cap.isOpened():
@@ -117,6 +133,20 @@ while cap.isOpened():
     # Perform pose detection.
     output_frame, landmarks = detectPose(frame, pose)
 
+    if landmarks:
+        shoulder = [landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value][0], landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value][1]]
+        elbow = [landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value][0], landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value][1]]
+        wrist = [landmarks[mp_pose.PoseLandmark.LEFT_WRIST.value][0], landmarks[mp_pose.PoseLandmark.LEFT_WRIST.value][1]]
+        angle = calculate_angle(shoulder, elbow, wrist)
+        cv2.putText(output_frame, str(angle), tuple(elbow), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2, cv2.LINE_AA)
+
+        if angle > 160:
+            stage = "down"
+        if angle < 30 and stage == "down":
+            stage = "up"
+            counter += 1
+            print(counter)
+            
     # Display the output frame.
     cv2.imshow('Pose Detection', output_frame)
 
