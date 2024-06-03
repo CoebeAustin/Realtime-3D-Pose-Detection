@@ -1,11 +1,6 @@
 import cv2
 import mediapipe as mp
-import os
-import tensorflow as tf
 import numpy as np
-
-tf.get_logger().setLevel('ERROR')
-os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 
 # Initialize the Pose model.
 mp_pose = mp.solutions.pose
@@ -54,7 +49,7 @@ def draw_landmarks_without_face(image, landmarks):
             cv2.line(image, start_point, end_point, (0, 255, 0), 2)
 
 def detectPose(image, pose):
-    
+
     # Create a copy of the input image.
     output_image = image.copy()
 
