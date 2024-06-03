@@ -8,12 +8,6 @@ pose = mp_pose.Pose(min_detection_confidence=0.3, model_complexity=2)
 mp_drawing = mp.solutions.drawing_utils
 
 def draw_landmarks_without_face(image, landmarks):
-    """
-    Draw pose landmarks on an image, excluding face landmarks.
-    Args:
-        image: The image to draw on.
-        landmarks: The list of landmarks to draw.
-    """
     # Define connections that do not involve face landmarks.
     pose_connections = [
         (mp_pose.PoseLandmark.LEFT_SHOULDER, mp_pose.PoseLandmark.RIGHT_SHOULDER),
@@ -95,12 +89,12 @@ def detectPose(image, pose):
     # Return the output image and the found landmarks.
     return output_image, landmarks
 
-def calculate_angle(a, b, c):
-    a = np.array(a)
-    b = np.array(b)
-    c = np.array(c)
+def calculate_angle(x, y, z):
+    a = np.array(x)
+    b = np.array(y)
+    c = np.array(z)
 
-    radians = np.arctan2(c[1]-b[1], c[0]-b[0]) - np.arctan2(a[1] - b[1], a[0] - b[0])
+    radians = np.arctan2(z[1]-y[1], z[0]-b[0]) - np.arctan2(x[1] - y[1], x[0] - y[0])
     angle = np.abs(radians * 180.0 / np.pi)
 
     if angle > 180.0:
