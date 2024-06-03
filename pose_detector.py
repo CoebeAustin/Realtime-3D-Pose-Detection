@@ -173,7 +173,6 @@ while cap.isOpened():
             right_stage = "up"
             right_counter += 1
             print(f"Right counter: {right_counter}")
-            
 
     # Display the left counter on the top-left side
     cv2.putText(output_frame, f'Left Counter: {left_counter}', (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2, cv2.LINE_AA)
