@@ -54,15 +54,7 @@ def draw_landmarks_without_face(image, landmarks):
             cv2.line(image, start_point, end_point, (0, 255, 0), 2)
 
 def detectPose(image, pose):
-    '''
-    This function performs pose detection on an image.
-    Args:
-        image: The input image with a prominent person whose pose landmarks need to be detected.
-        pose: The pose setup function required to perform the pose detection.
-    Returns:
-        output_image: The input image with the detected pose landmarks drawn.
-        landmarks: A list of detected landmarks converted into their original scale.
-    '''
+    
     # Create a copy of the input image.
     output_image = image.copy()
 
@@ -167,19 +159,12 @@ def track_squats(landmarks):
     cv2.putText(output_frame, str(left_angle), tuple(left_knee), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2, cv2.LINE_AA)
     cv2.putText(output_frame, str(right_angle), tuple(right_knee), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2, cv2.LINE_AA)
 
-    if left_angle > 160:
+    if left_angle and right_angle > 160:
         left_stage = "up"
-    if left_angle < 90 and left_stage == "up":
+    if left_angle and right_angle < 90 and left_stage == "up":
         left_stage = "down"
         left_counter += 1
-        print(f"Left counter: {left_counter}")
-
-    if right_angle > 160:
-        right_stage = "up"
-    if right_angle < 90 and right_stage == "up":
-        right_stage = "down"
-        right_counter += 1
-        print(f"Right counter: {right_counter}")
+        print(f"Squat counter: {left_counter}")
 
 # Initialize the webcam.
 cap = cv2.VideoCapture(0)
@@ -214,22 +199,27 @@ while cap.isOpened():
     if landmarks:
         if exercise == "c":
             track_curls(landmarks)
+            # Display the left counter on the top-left side
+            cv2.putText(output_frame, f'Left Counter: {left_counter}', (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2, cv2.LINE_AA)
+
+            # Display the right counter on the top-right side
+            right_text = f'Right Counter: {right_counter}'
+            text_size = cv2.getTextSize(right_text, cv2.FONT_HERSHEY_SIMPLEX, 1, 2)[0]
+            cv2.putText(output_frame, right_text, (frame.shape[1] - text_size[0] - 10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2, cv2.LINE_AA)
+
+            # Display the output frame.
+            cv2.imshow('Pose Detection', output_frame)
         elif exercise == "s":
             track_squats(landmarks)
+            # Display the left counter on the top-left side
+            cv2.putText(output_frame, f'Squat Counter: {left_counter}', (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2, cv2.LINE_AA)
+
+            # Display the output frame.
+            cv2.imshow('Pose Detection', output_frame)
         else:
             print("Invalid exercise type. Please restart the program and enter 'squats' or 'curls'.")
             break
 
-    # Display the left counter on the top-left side
-    cv2.putText(output_frame, f'Left Counter: {left_counter}', (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2, cv2.LINE_AA)
-
-    # Display the right counter on the top-right side
-    right_text = f'Right Counter: {right_counter}'
-    text_size = cv2.getTextSize(right_text, cv2.FONT_HERSHEY_SIMPLEX, 1, 2)[0]
-    cv2.putText(output_frame, right_text, (frame.shape[1] - text_size[0] - 10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2, cv2.LINE_AA)
-
-    # Display the output frame.
-    cv2.imshow('Pose Detection', output_frame)
 
     # Break the loop if 'q' is pressed.
     if cv2.waitKey(1) & 0xFF == ord('q'):
