@@ -172,7 +172,7 @@ cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
 cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
 
 # Get user input for exercise type
-exercise = input("Enter the exercise to track (squats/curls): ").strip().lower()
+exercise = input("Enter the exercise to track. Please enter \'s\' for squats, enter \'c\' for curls. Please enter \'q\' if you want to terminate or you are finished using the app: ").strip().lower()
 
 while cap.isOpened():
     # Read a frame from the webcam.
@@ -205,6 +205,10 @@ while cap.isOpened():
 
             # Display the output frame.
             cv2.imshow('Pose Detection', output_frame)
+
+        elif exercise == "q":
+            quit()
+
         else:
             print("Invalid exercise type. Please restart the program and enter 'squats' or 'curls'.")
             break
