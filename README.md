@@ -1,4 +1,4 @@
-# Realtime-3D-Pose-Detection
+# Exersion
 This Python-based application utilizes computer vision techniques mediapipe for keypoint detection and numpy for angle calculation to automatically count repetitions for curl-ups and squats in real-time. The app analyzes body movements through a web camera to track the start and completion of each repetition.
 
 # ⭐ Features 
